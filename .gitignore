@@ -1,0 +1,39 @@
+# Executables
+*.exe
+*.out
+*.app
+
+# Object files
+*.o
+*.obj
+
+# Debug files
+*.dSYM/
+*.su
+*.gch
+*.pch
+
+# Dependency files
+*.d
+*.depend
+
+# Build directories
+build/
+dist/
+bin/
+obj/
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data files (optional - uncomment if you want to exclude saved data)
+# data.txt
