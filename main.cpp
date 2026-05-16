@@ -2,6 +2,8 @@
 #include <string>
 #include <limits>
 #include <cstdlib>
+#include <algorithm>
+#include <iomanip>
 #include "FitnessTracker.h"
 
 void clearScreen() {
@@ -40,24 +42,82 @@ std::string readLine() {
     return s;
 }
 
-void seedData(FitnessTracker& t) {
-    t.addExercise(new StrengthExercise("Leg Press", "Chest", "lever", true));
-    t.addExercise(new StrengthExercise("Squat", "Legs", "lever", true));
-    t.addExercise(new StrengthExercise("Bicep Curl", "Biceps", "dumbbells", false));
-    t.addExercise(new CardioExercise("Running", "Legs", true, "moderate"));
-    t.addExercise(new CardioExercise("Cycling", "Legs", true, "low"));
-
-    Workout w("2026-05-10", 45);
-    StandardBlock* sb = new StandardBlock(t.findExercise("Leg Press"));
-    sb->addSet(Set(8, 75));
-    sb->addSet(Set(8, 77.5));
-    w.addBlock(sb);
-    t.addWorkout(std::move(w));
-
-    t.addGoal(new StrengthGoal("Leg Press 100 kg", "2026-08-01", "Leg Press", 100, 5));
+std::string normalizeEquipment(std::string eq) {
+    std::transform(eq.begin(), eq.end(), eq.begin(), [](unsigned char c){ return std::tolower(c); });
+    if (eq == "lever") return "barbell";
+    if (eq == "dumbbells") return "dumbbell";
+    if (eq == "dumbbell") return "dumbbell";
+    if (eq == "machine") return "machine";
+    if (eq == "cable") return "cable";
+    if (eq == "bodyweight") return "bodyweight";
+    return eq;
 }
 
-void listExercises(const FitnessTracker& t) {
+void seedData(FitnessTracker& t) {
+    // === Calisthenics (bodyweight) ===
+    // Push - pushing movements
+    t.addExercise(new StrengthExercise("Push-Up", "Chest", "bodyweight", true));
+    t.addExercise(new StrengthExercise("Diamond Push-Up", "Triceps", "bodyweight", true));
+    t.addExercise(new StrengthExercise("Pike Push-Up", "Shoulders", "bodyweight", true));
+    t.addExercise(new StrengthExercise("Handstand Push-Up", "Shoulders", "bodyweight", true));
+    t.addExercise(new StrengthExercise("Archer Push-Up", "Chest", "bodyweight", true));
+
+    // Pull - pulling movements
+    t.addExercise(new StrengthExercise("Chin-Up", "Biceps", "bar", true));
+    t.addExercise(new StrengthExercise("Muscle-Up", "Back", "bar", true));
+    t.addExercise(new StrengthExercise("Australian Pull-Up", "Back", "bar", true));
+    t.addExercise(new StrengthExercise("Archer Pull-Up", "Back", "bar", true));
+
+    // Legs
+    t.addExercise(new StrengthExercise("Pistol Squat", "Legs", "bodyweight", true));
+    t.addExercise(new StrengthExercise("Bulgarian Split Squat", "Legs", "bodyweight", true));
+    t.addExercise(new StrengthExercise("Jump Squat", "Legs", "bodyweight", true));
+    t.addExercise(new StrengthExercise("Lunges", "Legs", "bodyweight", true));
+
+    // Core
+    t.addExercise(new StrengthExercise("L-Sit", "Abs", "bodyweight", true));
+    t.addExercise(new StrengthExercise("Hanging Leg Raise", "Abs", "bar", false));
+    t.addExercise(new StrengthExercise("Hollow Body Hold", "Abs", "bodyweight", false));
+    t.addExercise(new StrengthExercise("Russian Twist", "Abs", "bodyweight", false));
+
+    // Skills - static strength skills
+    t.addExercise(new StrengthExercise("Handstand", "Shoulders", "bodyweight", true));
+    t.addExercise(new StrengthExercise("Front Lever", "Back", "bar", true));
+    t.addExercise(new StrengthExercise("Back Lever", "Back", "bar", true));
+    t.addExercise(new StrengthExercise("Human Flag", "Full Body", "pole", true));
+    t.addExercise(new StrengthExercise("Planche", "Shoulders", "bodyweight", true));
+
+    // === Compound strength exercises ===
+    t.addExercise(new StrengthExercise("Bench Press", "Chest", "barbell", true));
+    t.addExercise(new StrengthExercise("Squat", "Legs", "barbell", true));
+    t.addExercise(new StrengthExercise("Deadlift", "Back", "barbell", true));
+    t.addExercise(new StrengthExercise("Overhead Press", "Shoulders", "barbell", true));
+    t.addExercise(new StrengthExercise("Pull-Up", "Back", "bodyweight", true));
+    t.addExercise(new StrengthExercise("Dips", "Chest", "bodyweight", true));
+    t.addExercise(new StrengthExercise("Bent-Over Row", "Back", "barbell", true));
+    t.addExercise(new StrengthExercise("Leg Press", "Legs", "machine", true));
+
+    // === Isolation strength exercises ===
+    t.addExercise(new StrengthExercise("Bicep Curl", "Biceps", "dumbbell", false));
+    t.addExercise(new StrengthExercise("Tricep Extension", "Triceps", "cable", false));
+    t.addExercise(new StrengthExercise("Lateral Raise", "Shoulders", "dumbbell", false));
+    t.addExercise(new StrengthExercise("Leg Curl", "Hamstrings", "machine", false));
+    t.addExercise(new StrengthExercise("Leg Extension", "Quads", "machine", false));
+    t.addExercise(new StrengthExercise("Calf Raise", "Calves", "machine", false));
+    t.addExercise(new StrengthExercise("Cable Fly", "Chest", "cable", false));
+    t.addExercise(new StrengthExercise("Plank", "Abs", "bodyweight", false));
+
+    // === Cardio exercises ===
+    t.addExercise(new CardioExercise("Running", "Legs", true, "moderate"));
+    t.addExercise(new CardioExercise("Cycling", "Legs", true, "moderate"));
+    t.addExercise(new CardioExercise("Treadmill", "Legs", false, "low"));
+    t.addExercise(new CardioExercise("Rowing", "Back", false, "high"));
+    t.addExercise(new CardioExercise("Jump Rope", "Full Body", false, "high"));
+    t.addExercise(new CardioExercise("Swimming", "Full Body", false, "moderate"));
+    t.addExercise(new CardioExercise("Stair Climber", "Legs", false, "moderate"));
+}
+
+void listExercises(const FitnessTracker& t, bool pause = true) {
     clearScreen();
     std::cout << "\n============================================\n";
     std::cout << "              EXERCISES (" << t.getExerciseCount() << ")\n";
@@ -66,15 +126,49 @@ void listExercises(const FitnessTracker& t) {
     if (exs.empty()) {
         std::cout << "  No exercises yet.\n\n";
     } else {
-        for (size_t i = 0; i < exs.size(); i++) {
-            std::cout << "  [" << i << "] ";
-            exs[i]->print();
+        // Build vector of (exercise, original index) and sort by type then name
+        std::vector<std::pair<Exercise*, size_t>> items;
+        for (size_t i = 0; i < exs.size(); ++i) items.emplace_back(exs[i], i);
+        // Sort by original index (ID) so view is ordered by ID
+        std::sort(items.begin(), items.end(), [](const auto& a, const auto& b){
+            return a.second < b.second;
+        });
+
+        std::cout << std::left << std::setw(6) << "#"
+                  << std::setw(12) << "Type"
+                  << std::setw(28) << "Exercise"
+                  << std::setw(12) << "Muscle"
+                  << std::setw(12) << "Category"
+                  << "Equipment/Info\n";
+        std::cout << std::string(100, '-') << "\n";
+
+        for (const auto& p : items) {
+            Exercise* ex = p.first;
+            size_t orig = p.second;
+            std::cout << std::left << std::setw(6) << ("[" + std::to_string(orig) + "]")
+                      << std::setw(12) << ex->getType()
+                      << std::setw(28) << ex->getName()
+                      << std::setw(12) << ex->getMuscleGroup();
+            if (StrengthExercise* s = dynamic_cast<StrengthExercise*>(ex)) {
+                std::string category = s->getIsCompound() ? "compound" : "isolation";
+                std::cout << std::setw(12) << category
+                          << s->getEquipment();
+            } else if (CardioExercise* c = dynamic_cast<CardioExercise*>(ex)) {
+                std::string category = "cardio";
+                std::string where = c->getIsOutdoor() ? "outdoor" : "indoor";
+                std::cout << std::setw(12) << category
+                          << where << " " << c->getIntensity();
+            } else {
+                std::cout << std::setw(12) << "";
+            }
             std::cout << "\n";
         }
         std::cout << "\n";
     }
-    std::cout << "Press Enter to continue...";
-    std::cin.ignore();
+    if (pause) {
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+    }
 }
 
 void addExerciseMenu(FitnessTracker& t) {
@@ -86,12 +180,16 @@ void addExerciseMenu(FitnessTracker& t) {
     std::cout << "Muscle group: "; std::string muscle = readLine();
     std::cout << "Type (1=Strength, 2=Cardio): "; int type = readInt();
     if (type == 1) {
-        std::cout << "Equipment: "; std::string eq = readLine();
+        std::cout << "Equipment: "; std::string eq = normalizeEquipment(readLine());
         std::cout << "Compound? (1=yes, 0=no): "; int c = readInt();
         t.addExercise(new StrengthExercise(name, muscle, eq, c == 1));
     } else {
         std::cout << "Outdoor? (1=yes, 0=no): "; int o = readInt();
-        std::cout << "Intensity: "; std::string intens = readLine();
+        std::cout << "Intensity (1=high, 2=mid, 3=low): "; int it = readInt();
+        std::string intens;
+        if (it == 1) intens = "high";
+        else if (it == 2) intens = "moderate";
+        else intens = "low";
         t.addExercise(new CardioExercise(name, muscle, o == 1, intens));
     }
     clearScreen();
@@ -102,13 +200,11 @@ void addExerciseMenu(FitnessTracker& t) {
 
 void removeExerciseMenu(FitnessTracker& t) {
     clearScreen();
-    listExercises(t);
-    clearScreen();
     std::cout << "\n============================================\n";
     std::cout << "         DELETE EXERCISE\n";
     std::cout << "============================================\n\n";
-    listExercises(t);
-    std::cout << "Index to delete (or -1 to cancel): "; 
+    listExercises(t, false);
+    std::cout << "Index to delete (or -1 to cancel): ";
     int idx = readInt();
     if (idx == -1) return;
     t.removeExercise(idx);
@@ -144,18 +240,23 @@ void addWorkoutMenu(FitnessTracker& t) {
         std::cout << "\nChoice: ";
         int t1 = readInt();
         if (t1 == 0) break;
-        clearScreen();
-        listExercises(t);
-        clearScreen();
+        listExercises(t, false);
         if (t1 == 1) {
             std::cout << "Exercise index: "; int idx = readInt();
             Exercise* ex = t.getExercise(idx);
             if (!ex) { std::cout << "Invalid index.\n"; continue; }
             StandardBlock* sb = new StandardBlock(ex);
             std::cout << "Number of sets: "; int n = readInt();
+            std::cout << "Track weight for this block? (1=Yes, 2=No): ";
+            int trackChoice = readInt();
+            bool trackWeight = (trackChoice == 1);
             for (int i = 0; i < n; i++) {
                 std::cout << "Set " << (i+1) << " - reps: "; int r = readInt();
-                std::cout << "Set " << (i+1) << " - weight (kg): "; double we = readDouble();
+                double we = 0;
+                if (trackWeight) {
+                    std::cout << "Set " << (i+1) << " - weight (kg): ";
+                    we = readDouble();
+                }
                 sb->addSet(Set(r, we));
             }
             w.addBlock(sb);
@@ -230,8 +331,7 @@ void addProgramMenu(FitnessTracker& t) {
     std::cout << "       SELECT EXERCISES (-1 to end)\n";
     std::cout << "============================================\n\n";
     WorkoutProgram p(n);
-    listExercises(t);
-    clearScreen();
+    listExercises(t, false);
     while (true) {
         std::cout << "\nExercise index (-1 = end): "; int idx = readInt();
         if (idx == -1) break;
@@ -276,10 +376,29 @@ void addGoalMenu(FitnessTracker& t) {
     std::cout << "Deadline (YYYY-MM-DD): "; std::string dl = readLine();
     std::cout << "Type (1=Strength, 2=Weight): "; int type = readInt();
     if (type == 1) {
-        std::cout << "Exercise name: "; std::string en = readLine();
-        std::cout << "Target weight (kg): "; double tw = readDouble();
+        clearScreen();
+        std::cout << "\n============================================\n";
+        std::cout << "         SELECT EXERCISE FOR GOAL\n";
+        std::cout << "============================================\n\n";
+        listExercises(t, false);
+        std::cout << "\nExercise index: "; int idx = readInt();
+        Exercise* ex = t.getExercise(idx);
+        if (!ex) {
+            clearScreen();
+            std::cout << "\n[ERROR] Invalid index. Goal not added.\n\n";
+            std::cout << "Press Enter to continue...";
+            std::cin.ignore();
+            return;
+        }
+        std::string en = ex->getName();
+        std::cout << "Track weight for this goal? (1=Yes, 2=No): "; int track = readInt();
+        bool trackWeight = (track == 1);
+        double tw = 0;
+        if (trackWeight) {
+            std::cout << "Target weight (kg): "; tw = readDouble();
+        }
         std::cout << "Target reps: "; int tr = readInt();
-        t.addGoal(new StrengthGoal(d, dl, en, tw, tr));
+        t.addGoal(new StrengthGoal(d, dl, en, tw, tr, trackWeight));
     } else {
         std::cout << "Starting weight (kg): "; double sw = readDouble();
         std::cout << "Target weight (kg): "; double tw = readDouble();
@@ -292,7 +411,7 @@ void addGoalMenu(FitnessTracker& t) {
     std::cin.ignore();
 }
 
-void listGoals(const FitnessTracker& t) {
+void listGoals(const FitnessTracker& t, bool pause = true) {
     clearScreen();
     std::cout << "\n============================================\n";
     std::cout << "               GOALS (" << t.getGoalCount() << ")\n";
@@ -306,6 +425,42 @@ void listGoals(const FitnessTracker& t) {
         }
         std::cout << "\n";
     }
+    if (pause) {
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+    }
+}
+
+void updateWeightMenu(FitnessTracker& t) {
+    clearScreen();
+    if (t.getGoalCount() == 0) {
+        std::cout << "\n[ERROR] No goals available.\n\n";
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+        return;
+    }
+
+    listGoals(t, false);
+    std::cout << "\nIndex of weight goal: "; int idx = readInt();
+    if (idx < 0 || idx >= (int)t.getGoals().size()) {
+        std::cout << "Invalid index.\n";
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+        return;
+    }
+
+    WeightGoal* wg = dynamic_cast<WeightGoal*>(t.getGoals()[idx]);
+    if (!wg) {
+        std::cout << "This goal is not a weight goal.\n";
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+        return;
+    }
+
+    std::cout << "New current weight (kg): "; double w = readDouble();
+    wg->updateCurrent(w);
+    clearScreen();
+    std::cout << "\nUpdated.\n\n";
     std::cout << "Press Enter to continue...";
     std::cin.ignore();
 }
@@ -325,8 +480,8 @@ void searchMenu(const FitnessTracker& t) {
         std::cout << "  No results found.\n\n";
     } else {
         std::cout << "Found " << r.size() << " exercise(s):\n\n";
-        for (size_t i = 0; i < r.size(); i++) { 
-            std::cout << "  "; r[i]->print(); std::cout << "\n"; 
+        for (size_t i = 0; i < r.size(); i++) {
+            std::cout << "  "; r[i]->print(); std::cout << "\n";
         }
         std::cout << "\n";
     }
@@ -366,17 +521,22 @@ void printMenu() {
     std::cout << "    9. Add\n\n";
     std::cout << "  GOALS\n";
     std::cout << "   10. View\n";
-    std::cout << "   11. Add\n\n";
+    std::cout << "   11. Add\n";
+    std::cout << "   12. Update current weight\n\n";
     std::cout << "  OTHER\n";
-    std::cout << "   12. Search\n";
-    std::cout << "   13. Save to File\n";
-    std::cout << "   14. Load from File\n";
+    std::cout << "   13. Search\n";
+    std::cout << "   14. Save to File\n";
+    std::cout << "   15. Load from File\n";
     std::cout << "    0. Exit\n\n";
     std::cout << "============================================\n";
     std::cout << "Choice: ";
 }
 
 int main() {
+    #ifdef _WIN32
+        system("chcp 65001 > nul");
+    #endif
+
     FitnessTracker t;
     seedData(t);
     
@@ -403,8 +563,9 @@ int main() {
             case 9: addProgramMenu(t); break;
             case 10: listGoals(t); break;
             case 11: addGoalMenu(t); break;
-            case 12: searchMenu(t); break;
-            case 13:
+            case 12: updateWeightMenu(t); break;
+            case 13: searchMenu(t); break;
+            case 14:
                 if (t.saveToFile("data.txt")) {
                     clearScreen();
                     std::cout << "\n[OK] Data saved to data.txt\n\n";
@@ -418,7 +579,7 @@ int main() {
                     std::cin.ignore();
                 }
                 break;
-            case 14:
+            case 15:
                 if (t.loadFromFile("data.txt")) {
                     clearScreen();
                     std::cout << "\n[OK] Data loaded from data.txt\n\n";

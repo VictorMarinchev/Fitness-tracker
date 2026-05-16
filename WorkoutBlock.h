@@ -19,7 +19,7 @@ public:
 
     virtual std::string getType() const = 0;
     virtual double getTotalVolume() const = 0;
-    virtual void print() const = 0;
+    virtual void display() const = 0;
     virtual void saveTo(std::ostream& out) const = 0;
     virtual bool isStandard() const = 0;
 };
@@ -48,12 +48,13 @@ public:
         return total;
     }
 
-    void print() const override {
+    void display() const override {
         std::cout << exercise->getName() << " - " << sets.size() << " sets:\n";
         for (size_t i = 0; i < sets.size(); i++) {
             std::cout << "      " << (i + 1) << ") "
                       << sets[i].getReps() << " reps x "
                       << sets[i].getWeight() << " kg";
+            if (sets[i].getRpe() > 0) std::cout << " (RPE " << sets[i].getRpe() << ")";
             if (sets[i].getIsPR()) std::cout << " *** PR ***";
             std::cout << "\n";
         }
@@ -63,7 +64,7 @@ public:
         out << "STD|" << exercise->getName() << "|" << sets.size() << "\n";
         for (size_t i = 0; i < sets.size(); i++) {
             out << sets[i].getReps() << "|" << sets[i].getWeight()
-                << "|" << sets[i].getIsPR() << "\n";
+                << "|" << sets[i].getRpe() << "|" << sets[i].getIsPR() << "\n";
         }
     }
 };
@@ -89,6 +90,14 @@ public:
         items.push_back(CircuitItem(ex, reps));
     }
 
+    void removeExercise(Exercise* ex) {
+        items.erase(std::remove_if(items.begin(), items.end(), [&](const CircuitItem& it){
+            return it.exercise == ex;
+        }), items.end());
+    }
+
+    bool isEmpty() const { return items.empty(); }
+
     std::string getType() const override { return "Circuit"; }
     bool isStandard() const override { return false; }
 
@@ -98,7 +107,7 @@ public:
         return total * rounds;
     }
 
-    void print() const override {
+    void display() const override {
         std::cout << "Circuit workout - " << rounds << " rounds:\n";
         for (size_t i = 0; i < items.size(); i++) {
             std::cout << "      " << (i + 1) << ") "
@@ -157,6 +166,31 @@ public:
     void addBlock(WorkoutBlock* b) { blocks.push_back(b); }
     int getBlockCount() const { return blocks.size(); }
 
+    void removeBlocksWithExercise(Exercise* ex) {
+        for (size_t i = 0; i < blocks.size(); ) {
+            WorkoutBlock* b = blocks[i];
+            if (b->isStandard()) {
+                StandardBlock* sb = (StandardBlock*)b;
+                if (sb->getExercise() == ex) {
+                    delete b;
+                    blocks.erase(blocks.begin() + i);
+                    continue;
+                }
+            } else {
+                CircuitBlock* cb = dynamic_cast<CircuitBlock*>(b);
+                if (cb) {
+                    cb->removeExercise(ex);
+                    if (cb->isEmpty()) {
+                        delete cb;
+                        blocks.erase(blocks.begin() + i);
+                        continue;
+                    }
+                }
+            }
+            ++i;
+        }
+    }
+
     double getTotalVolume() const {
         double total = 0;
         for (size_t i = 0; i < blocks.size(); i++) total += blocks[i]->getTotalVolume();
@@ -164,10 +198,10 @@ public:
     }
 
     void print() const {
-        std::cout << "Workout from " << date << " (" << duration << " min):\n";
+        std::cout << "Workout on " << date << " (" << duration << " min):\n";
         for (size_t i = 0; i < blocks.size(); i++) {
             std::cout << "  [" << (i + 1) << "] ";
-            blocks[i]->print();
+            blocks[i]->display();
         }
         std::cout << "  Total volume: " << getTotalVolume() << "\n";
     }

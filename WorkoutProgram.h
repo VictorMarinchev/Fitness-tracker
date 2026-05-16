@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include "Exercise.h"
 
 class WorkoutProgram {
@@ -20,6 +21,10 @@ public:
     void setName(const std::string& n) { name = n; }
     void addExercise(Exercise* ex) { planned.push_back(ex); }
     int getExerciseCount() const { return planned.size(); }
+
+    void removeExercise(Exercise* ex) {
+        planned.erase(std::remove(planned.begin(), planned.end(), ex), planned.end());
+    }
 
     void print() const {
         std::cout << "Program: " << name << " (" << planned.size() << " exercises)\n";

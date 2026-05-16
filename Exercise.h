@@ -22,6 +22,7 @@ public:
     virtual std::string getType() const = 0;
     virtual void print() const = 0;
     virtual void saveTo(std::ostream& out) const = 0;
+    virtual double calcVolume(int reps, double weight) const = 0;
 };
 
 class StrengthExercise : public Exercise {
@@ -48,6 +49,12 @@ public:
     void saveTo(std::ostream& out) const override {
         out << "STRENGTH|" << name << "|" << muscleGroup << "|"
             << equipment << "|" << isCompound << "\n";
+    }
+
+    // Volume = reps × weight
+    double calcVolume(int reps, double weight) const override {
+        if (reps < 0 || weight < 0) return 0;
+        return reps * weight;
     }
 
     double estimate1RM(int reps, double weight) const {
@@ -81,6 +88,12 @@ public:
     void saveTo(std::ostream& out) const override {
         out << "CARDIO|" << name << "|" << muscleGroup << "|"
             << isOutdoor << "|" << intensity << "\n";
+    }
+
+    // Volume = time × distance (reps=minutes, weight=km)
+    double calcVolume(int reps, double weight) const override {
+        if (reps < 0 || weight < 0) return 0;
+        return reps * weight;
     }
 };
 

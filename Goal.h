@@ -32,41 +32,80 @@ private:
     std::string exerciseName;
     double targetWeight;
     int targetReps;
-    double currentBest;
+    int currentBestReps;
+    int bestRepsAtTargetWeight;
+    double bestWeightAtTargetReps;
+    bool trackWeight;
 
 public:
     StrengthGoal(const std::string& d, const std::string& dl,
-                 const std::string& exName, double targetW, int targetR)
+                 const std::string& exName, double targetW, int targetR,
+                 bool trackW = true)
         : Goal(d, dl), exerciseName(exName), targetWeight(targetW),
-          targetReps(targetR), currentBest(0) {}
+          targetReps(targetR), currentBestReps(0),
+          bestRepsAtTargetWeight(0), bestWeightAtTargetReps(0),
+          trackWeight(trackW) {}
 
     std::string getExerciseName() const { return exerciseName; }
     double getTargetWeight() const { return targetWeight; }
+    int getTargetReps() const { return targetReps; }
+    bool getTrackWeight() const { return trackWeight; }
 
-    void updateBest(double w) {
-        if (w > currentBest) currentBest = w;
-        if (currentBest >= targetWeight) markCompleted();
+    void setCurrentBest(int reps, double weight) {
+        if (!trackWeight) {
+            if (reps > currentBestReps) currentBestReps = reps;
+            if (currentBestReps >= targetReps) markCompleted();
+            return;
+        }
+
+        if (weight <= 0) return;
+        if (reps > currentBestReps) currentBestReps = reps;
+        if (reps >= targetReps && weight > bestWeightAtTargetReps)
+            bestWeightAtTargetReps = weight;
+        if (weight >= targetWeight && reps > bestRepsAtTargetWeight)
+            bestRepsAtTargetWeight = reps;
+        if (weight >= targetWeight && reps >= targetReps)
+            markCompleted();
+    }
+
+    void updateBest(int reps, double weight) {
+        setCurrentBest(reps, weight);
     }
 
     double getProgress() const override {
-        if (targetWeight <= 0) return 0;
-        double p = (currentBest / targetWeight) * 100;
-        if (p > 100) p = 100;
+        if (!trackWeight) {
+            if (targetReps <= 0) return 0;
+            double p = ((double)currentBestReps / targetReps) * 100;
+            if (p > 100) p = 100;
+            return p;
+        }
+        double wProg = targetWeight > 0 ? (bestWeightAtTargetReps / targetWeight) * 100 : 100;
+        double rProg = targetReps > 0 ? ((double)bestRepsAtTargetWeight / targetReps) * 100 : 100;
+        if (wProg > 100) wProg = 100;
+        if (rProg > 100) rProg = 100;
+        double p = (wProg + rProg) / 2;
         return p;
     }
 
     void print() const override {
-        std::cout << "[Strength] " << description
-                  << " - " << exerciseName << ": " << currentBest
-                  << "/" << targetWeight << " kg x " << targetReps
-                  << " reps (" << (int)getProgress() << "%)";
+        std::cout << "[Strength] " << description << " - " << exerciseName;
+        if (trackWeight) {
+            std::cout << ": " << bestRepsAtTargetWeight << " reps @ " << targetWeight
+                      << " kg, best " << bestWeightAtTargetReps << " kg for "
+                      << targetReps << " reps (" << (int)getProgress() << "% )";
+        } else {
+            std::cout << ": " << currentBestReps << " / " << targetReps
+                      << " reps (" << (int)getProgress() << "% )";
+        }
         if (isCompleted) std::cout << " COMPLETED";
     }
 
     void saveTo(std::ostream& out) const override {
         out << "SGOAL|" << description << "|" << deadline << "|"
             << exerciseName << "|" << targetWeight << "|" << targetReps
-            << "|" << currentBest << "|" << isCompleted << "\n";
+            << "|" << (trackWeight ? "1" : "0") << "|"
+            << currentBestReps << "|" << bestRepsAtTargetWeight << "|"
+            << bestWeightAtTargetReps << "|" << isCompleted << "\n";
     }
 };
 
