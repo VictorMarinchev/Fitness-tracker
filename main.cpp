@@ -350,7 +350,7 @@ void printMenu() {
     clearScreen();
     std::cout << "\n";
     std::cout << "============================================\n";
-    std::cout << "      FITNESS TRACKER MAIN MENU\n";
+    std::cout << "          FITNESS TRACKER MENU\n";
     std::cout << "============================================\n\n";
     std::cout << "  EXERCISES\n";
     std::cout << "    1. View\n";
