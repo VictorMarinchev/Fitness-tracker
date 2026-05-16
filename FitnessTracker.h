@@ -1,0 +1,241 @@
+#ifndef FITNESS_TRACKER_H
+#define FITNESS_TRACKER_H
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+#include "Exercise.h"
+#include "WorkoutBlock.h"
+#include "Goal.h"
+#include "WorkoutProgram.h"
+
+class FitnessTracker {
+private:
+    std::vector<Exercise*> exercises;
+    std::vector<Workout> workouts;
+    std::vector<WorkoutProgram> programs;
+    std::vector<Goal*> goals;
+
+public:
+    FitnessTracker() {}
+
+    ~FitnessTracker() {
+        for (size_t i = 0; i < exercises.size(); i++) delete exercises[i];
+        for (size_t i = 0; i < goals.size(); i++) delete goals[i];
+    }
+
+    // CRUD упражнения
+    void addExercise(Exercise* ex) { exercises.push_back(ex); }
+
+    void removeExercise(int idx) {
+        if (idx < 0 || idx >= (int)exercises.size()) return;
+        delete exercises[idx];
+        exercises.erase(exercises.begin() + idx);
+    }
+
+    Exercise* getExercise(int idx) {
+        if (idx < 0 || idx >= (int)exercises.size()) return nullptr;
+        return exercises[idx];
+    }
+
+    Exercise* findExercise(const std::string& name) {
+        for (size_t i = 0; i < exercises.size(); i++)
+            if (exercises[i]->getName() == name) return exercises[i];
+        return nullptr;
+    }
+
+    int getExerciseCount() const { return exercises.size(); }
+    const std::vector<Exercise*>& getExercises() const { return exercises; }
+
+    // CRUD тренировки
+    void addWorkout(Workout w) { workouts.push_back(std::move(w)); }
+
+    void removeWorkout(int idx) {
+        if (idx < 0 || idx >= (int)workouts.size()) return;
+        workouts.erase(workouts.begin() + idx);
+    }
+
+    int getWorkoutCount() const { return workouts.size(); }
+    const std::vector<Workout>& getWorkouts() const { return workouts; }
+    Workout& getWorkout(int idx) { return workouts[idx]; }
+
+    // Функционалност 3: PR
+    int detectPRs(Workout& w) {
+        int newPRs = 0;
+        const std::vector<WorkoutBlock*>& blocks = w.getBlocks();
+        for (size_t i = 0; i < blocks.size(); i++) {
+            if (!blocks[i]->isStandard()) continue;
+            StandardBlock* sb = (StandardBlock*)blocks[i];
+            Exercise* ex = sb->getExercise();
+
+            double maxWeight = 0;
+            for (size_t j = 0; j < workouts.size(); j++) {
+                const std::vector<WorkoutBlock*>& pb = workouts[j].getBlocks();
+                for (size_t k = 0; k < pb.size(); k++) {
+                    if (!pb[k]->isStandard()) continue;
+                    StandardBlock* psb = (StandardBlock*)pb[k];
+                    if (psb->getExercise() != ex) continue;
+                    const std::vector<Set>& sets = psb->getSets();
+                    for (size_t s = 0; s < sets.size(); s++)
+                        if (sets[s].getWeight() > maxWeight) maxWeight = sets[s].getWeight();
+                }
+            }
+
+            std::vector<Set>& newSets = sb->getSetsMutable();
+            for (size_t s = 0; s < newSets.size(); s++) {
+                if (newSets[s].getWeight() > maxWeight) {
+                    newSets[s].markAsPR();
+                    maxWeight = newSets[s].getWeight();
+                    newPRs++;
+                }
+            }
+        }
+        return newPRs;
+    }
+
+    // Функционалност 4: Прогрес
+    void showProgress(const std::string& exerciseName) const {
+        std::cout << "\nПрогрес за: " << exerciseName << "\n";
+        bool found = false;
+        for (size_t i = 0; i < workouts.size(); i++) {
+            const std::vector<WorkoutBlock*>& blocks = workouts[i].getBlocks();
+            double maxW = 0;
+            for (size_t j = 0; j < blocks.size(); j++) {
+                if (!blocks[j]->isStandard()) continue;
+                StandardBlock* sb = (StandardBlock*)blocks[j];
+                if (sb->getExercise()->getName() != exerciseName) continue;
+                const std::vector<Set>& sets = sb->getSets();
+                for (size_t s = 0; s < sets.size(); s++)
+                    if (sets[s].getWeight() > maxW) maxW = sets[s].getWeight();
+            }
+            if (maxW > 0) {
+                std::cout << "  " << workouts[i].getDate()
+                          << " - макс. тежест: " << maxW << " кг\n";
+                found = true;
+            }
+        }
+        if (!found) std::cout << "  Няма записи.\n";
+    }
+
+    // Функционалност 5: Обобщение
+    void showSummary() const {
+        std::cout << "\nОбобщение:\n";
+        std::cout << "  Брой тренировки: " << workouts.size() << "\n";
+        double totalVolume = 0;
+        int totalDuration = 0, totalPRs = 0;
+        for (size_t i = 0; i < workouts.size(); i++) {
+            totalVolume += workouts[i].getTotalVolume();
+            totalDuration += workouts[i].getDuration();
+            const std::vector<WorkoutBlock*>& blocks = workouts[i].getBlocks();
+            for (size_t j = 0; j < blocks.size(); j++) {
+                if (!blocks[j]->isStandard()) continue;
+                StandardBlock* sb = (StandardBlock*)blocks[j];
+                const std::vector<Set>& sets = sb->getSets();
+                for (size_t s = 0; s < sets.size(); s++)
+                    if (sets[s].getIsPR()) totalPRs++;
+            }
+        }
+        std::cout << "  Общ обем: " << totalVolume << "\n";
+        std::cout << "  Общо време: " << totalDuration << " мин\n";
+        std::cout << "  Брой PR-и: " << totalPRs << "\n";
+        if (workouts.size() > 0)
+            std::cout << "  Средна продължителност: "
+                      << (totalDuration / (int)workouts.size()) << " мин\n";
+    }
+
+    // CRUD програми
+    void addProgram(const WorkoutProgram& p) { programs.push_back(p); }
+    int getProgramCount() const { return programs.size(); }
+    const std::vector<WorkoutProgram>& getPrograms() const { return programs; }
+
+    void removeProgram(int idx) {
+        if (idx < 0 || idx >= (int)programs.size()) return;
+        programs.erase(programs.begin() + idx);
+    }
+
+    // CRUD цели
+    void addGoal(Goal* g) { goals.push_back(g); }
+    int getGoalCount() const { return goals.size(); }
+    const std::vector<Goal*>& getGoals() const { return goals; }
+
+    void removeGoal(int idx) {
+        if (idx < 0 || idx >= (int)goals.size()) return;
+        delete goals[idx];
+        goals.erase(goals.begin() + idx);
+    }
+
+    void updateGoalsFromWorkouts() {
+        for (size_t g = 0; g < goals.size(); g++) {
+            StrengthGoal* sg = dynamic_cast<StrengthGoal*>(goals[g]);
+            if (!sg) continue;
+            for (size_t i = 0; i < workouts.size(); i++) {
+                const std::vector<WorkoutBlock*>& blocks = workouts[i].getBlocks();
+                for (size_t j = 0; j < blocks.size(); j++) {
+                    if (!blocks[j]->isStandard()) continue;
+                    StandardBlock* sb = (StandardBlock*)blocks[j];
+                    if (sb->getExercise()->getName() != sg->getExerciseName()) continue;
+                    const std::vector<Set>& sets = sb->getSets();
+                    for (size_t s = 0; s < sets.size(); s++)
+                        sg->updateBest(sets[s].getWeight());
+                }
+            }
+        }
+    }
+
+    // Функционалност 8: Търсене
+    std::vector<Exercise*> searchExercises(const std::string& query) const {
+        std::vector<Exercise*> results;
+        if (query.empty()) return results;
+        for (size_t i = 0; i < exercises.size(); i++) {
+            if (exercises[i]->getName().find(query) != std::string::npos ||
+                exercises[i]->getMuscleGroup().find(query) != std::string::npos ||
+                exercises[i]->getType().find(query) != std::string::npos)
+                results.push_back(exercises[i]);
+        }
+        return results;
+    }
+
+    // Функционалност 9: Файл
+    bool saveToFile(const std::string& filename) const {
+        std::ofstream out(filename);
+        if (!out) return false;
+        out << exercises.size() << "\n";
+        for (size_t i = 0; i < exercises.size(); i++) exercises[i]->saveTo(out);
+        out << programs.size() << "\n";
+        for (size_t i = 0; i < programs.size(); i++) programs[i].saveTo(out);
+        out << goals.size() << "\n";
+        for (size_t i = 0; i < goals.size(); i++) goals[i]->saveTo(out);
+        return true;
+    }
+
+    bool loadFromFile(const std::string& filename) {
+        std::ifstream in(filename);
+        if (!in) return false;
+        for (size_t i = 0; i < exercises.size(); i++) delete exercises[i];
+        exercises.clear();
+
+        int n; in >> n; in.ignore();
+        for (int i = 0; i < n; i++) {
+            std::string line;
+            std::getline(in, line);
+            std::vector<std::string> parts;
+            std::string cur;
+            for (size_t j = 0; j < line.size(); j++) {
+                if (line[j] == '|') { parts.push_back(cur); cur.clear(); }
+                else cur += line[j];
+            }
+            if (!cur.empty()) parts.push_back(cur);
+            if (parts.size() < 5) continue;
+            if (parts[0] == "STRENGTH")
+                exercises.push_back(new StrengthExercise(
+                    parts[1], parts[2], parts[3], parts[4] == "1"));
+            else if (parts[0] == "CARDIO")
+                exercises.push_back(new CardioExercise(
+                    parts[1], parts[2], parts[3] == "1", parts[4]));
+        }
+        return true;
+    }
+};
+
+#endif
