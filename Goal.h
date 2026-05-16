@@ -56,11 +56,11 @@ public:
     }
 
     void print() const override {
-        std::cout << "[Силова] " << description
+        std::cout << "[Strength] " << description
                   << " - " << exerciseName << ": " << currentBest
-                  << "/" << targetWeight << " кг x " << targetReps
-                  << " повт. (" << (int)getProgress() << "%)";
-        if (isCompleted) std::cout << " ЗАВЪРШЕНА";
+                  << "/" << targetWeight << " kg x " << targetReps
+                  << " reps (" << (int)getProgress() << "%)";
+        if (isCompleted) std::cout << " COMPLETED";
     }
 
     void saveTo(std::ostream& out) const override {
@@ -101,10 +101,10 @@ public:
     }
 
     void print() const override {
-        std::cout << "[Тегло] " << description
+        std::cout << "[Weight] " << description
                   << " - " << currentWeight << " / " << targetWeight
-                  << " кг (" << (int)getProgress() << "%)";
-        if (isCompleted) std::cout << " ЗАВЪРШЕНА";
+                  << " kg (" << (int)getProgress() << "%)";
+        if (isCompleted) std::cout << " COMPLETED";
     }
 
     void saveTo(std::ostream& out) const override {

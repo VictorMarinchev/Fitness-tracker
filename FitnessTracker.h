@@ -25,7 +25,7 @@ public:
         for (size_t i = 0; i < goals.size(); i++) delete goals[i];
     }
 
-    // CRUD упражнения
+    // CRUD Exercises
     void addExercise(Exercise* ex) { exercises.push_back(ex); }
 
     void removeExercise(int idx) {
@@ -48,7 +48,7 @@ public:
     int getExerciseCount() const { return exercises.size(); }
     const std::vector<Exercise*>& getExercises() const { return exercises; }
 
-    // CRUD тренировки
+    // CRUD Workouts
     void addWorkout(Workout w) { workouts.push_back(std::move(w)); }
 
     void removeWorkout(int idx) {
@@ -60,7 +60,7 @@ public:
     const std::vector<Workout>& getWorkouts() const { return workouts; }
     Workout& getWorkout(int idx) { return workouts[idx]; }
 
-    // Функционалност 3: PR
+    // Feature 3: PR Detection
     int detectPRs(Workout& w) {
         int newPRs = 0;
         const std::vector<WorkoutBlock*>& blocks = w.getBlocks();
@@ -94,9 +94,9 @@ public:
         return newPRs;
     }
 
-    // Функционалност 4: Прогрес
+    // Feature 4: Progress
     void showProgress(const std::string& exerciseName) const {
-        std::cout << "\nПрогрес за: " << exerciseName << "\n";
+        std::cout << "\nProgress for: " << exerciseName << "\n";
         bool found = false;
         for (size_t i = 0; i < workouts.size(); i++) {
             const std::vector<WorkoutBlock*>& blocks = workouts[i].getBlocks();
@@ -111,17 +111,17 @@ public:
             }
             if (maxW > 0) {
                 std::cout << "  " << workouts[i].getDate()
-                          << " - макс. тежест: " << maxW << " кг\n";
+                          << " - max weight: " << maxW << " kg\n";
                 found = true;
             }
         }
-        if (!found) std::cout << "  Няма записи.\n";
+        if (!found) std::cout << "  No records.\n";
     }
 
-    // Функционалност 5: Обобщение
+    // Feature 5: Summary
     void showSummary() const {
-        std::cout << "\nОбобщение:\n";
-        std::cout << "  Брой тренировки: " << workouts.size() << "\n";
+        std::cout << "\nSummary:\n";
+        std::cout << "  Number of workouts: " << workouts.size() << "\n";
         double totalVolume = 0;
         int totalDuration = 0, totalPRs = 0;
         for (size_t i = 0; i < workouts.size(); i++) {
@@ -136,15 +136,15 @@ public:
                     if (sets[s].getIsPR()) totalPRs++;
             }
         }
-        std::cout << "  Общ обем: " << totalVolume << "\n";
-        std::cout << "  Общо време: " << totalDuration << " мин\n";
-        std::cout << "  Брой PR-и: " << totalPRs << "\n";
+        std::cout << "  Total volume: " << totalVolume << "\n";
+        std::cout << "  Total time: " << totalDuration << " min\n";
+        std::cout << "  Number of PRs: " << totalPRs << "\n";
         if (workouts.size() > 0)
-            std::cout << "  Средна продължителност: "
-                      << (totalDuration / (int)workouts.size()) << " мин\n";
+            std::cout << "  Average duration: "
+                      << (totalDuration / (int)workouts.size()) << " min\n";
     }
 
-    // CRUD програми
+    // CRUD Programs
     void addProgram(const WorkoutProgram& p) { programs.push_back(p); }
     int getProgramCount() const { return programs.size(); }
     const std::vector<WorkoutProgram>& getPrograms() const { return programs; }
@@ -154,7 +154,7 @@ public:
         programs.erase(programs.begin() + idx);
     }
 
-    // CRUD цели
+    // CRUD Goals
     void addGoal(Goal* g) { goals.push_back(g); }
     int getGoalCount() const { return goals.size(); }
     const std::vector<Goal*>& getGoals() const { return goals; }
@@ -183,7 +183,7 @@ public:
         }
     }
 
-    // Функционалност 8: Търсене
+    // Feature 8: Search
     std::vector<Exercise*> searchExercises(const std::string& query) const {
         std::vector<Exercise*> results;
         if (query.empty()) return results;
@@ -196,7 +196,7 @@ public:
         return results;
     }
 
-    // Функционалност 9: Файл
+    // Feature 9: File I/O
     bool saveToFile(const std::string& filename) const {
         std::ofstream out(filename);
         if (!out) return false;

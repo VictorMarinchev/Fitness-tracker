@@ -39,7 +39,7 @@ public:
     void addSet(const Set& s) { sets.push_back(s); }
     int getSetCount() const { return sets.size(); }
 
-    std::string getType() const override { return "Стандартен"; }
+    std::string getType() const override { return "Standard"; }
     bool isStandard() const override { return true; }
 
     double getTotalVolume() const override {
@@ -49,11 +49,11 @@ public:
     }
 
     void print() const override {
-        std::cout << exercise->getName() << " - " << sets.size() << " серии:\n";
+        std::cout << exercise->getName() << " - " << sets.size() << " sets:\n";
         for (size_t i = 0; i < sets.size(); i++) {
             std::cout << "      " << (i + 1) << ") "
-                      << sets[i].getReps() << " повт. x "
-                      << sets[i].getWeight() << " кг";
+                      << sets[i].getReps() << " reps x "
+                      << sets[i].getWeight() << " kg";
             if (sets[i].getIsPR()) std::cout << " *** PR ***";
             std::cout << "\n";
         }
@@ -89,7 +89,7 @@ public:
         items.push_back(CircuitItem(ex, reps));
     }
 
-    std::string getType() const override { return "Кръгов"; }
+    std::string getType() const override { return "Circuit"; }
     bool isStandard() const override { return false; }
 
     double getTotalVolume() const override {
@@ -99,11 +99,11 @@ public:
     }
 
     void print() const override {
-        std::cout << "Кръгова тренировка - " << rounds << " кръга:\n";
+        std::cout << "Circuit workout - " << rounds << " rounds:\n";
         for (size_t i = 0; i < items.size(); i++) {
             std::cout << "      " << (i + 1) << ") "
                       << items[i].exercise->getName()
-                      << " x " << items[i].reps << " повт.\n";
+                      << " x " << items[i].reps << " reps\n";
         }
     }
 
@@ -164,12 +164,12 @@ public:
     }
 
     void print() const {
-        std::cout << "Тренировка от " << date << " (" << duration << " мин):\n";
+        std::cout << "Workout from " << date << " (" << duration << " min):\n";
         for (size_t i = 0; i < blocks.size(); i++) {
             std::cout << "  [" << (i + 1) << "] ";
             blocks[i]->print();
         }
-        std::cout << "  Общ обем: " << getTotalVolume() << "\n";
+        std::cout << "  Total volume: " << getTotalVolume() << "\n";
     }
 };
 

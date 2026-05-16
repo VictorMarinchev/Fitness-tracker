@@ -22,7 +22,7 @@ public:
     int getExerciseCount() const { return planned.size(); }
 
     void print() const {
-        std::cout << "Програма: " << name << " (" << planned.size() << " упражнения)\n";
+        std::cout << "Program: " << name << " (" << planned.size() << " exercises)\n";
         for (size_t i = 0; i < planned.size(); i++) {
             std::cout << "  " << (i + 1) << ") " << planned[i]->getName() << "\n";
         }

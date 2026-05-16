@@ -37,12 +37,12 @@ public:
     std::string getEquipment() const { return equipment; }
     bool getIsCompound() const { return isCompound; }
 
-    std::string getType() const override { return "Силово"; }
+    std::string getType() const override { return "Strength"; }
 
     void print() const override {
-        std::cout << "[Силово] " << name << " (" << muscleGroup << ")";
-        std::cout << (isCompound ? " - съставно" : " - изолиращо");
-        std::cout << ", оборудване: " << equipment;
+        std::cout << "[Strength] " << name << " (" << muscleGroup << ")";
+        std::cout << (isCompound ? " - compound" : " - isolation");
+        std::cout << ", equipment: " << equipment;
     }
 
     void saveTo(std::ostream& out) const override {
@@ -70,12 +70,12 @@ public:
     bool getIsOutdoor() const { return isOutdoor; }
     std::string getIntensity() const { return intensity; }
 
-    std::string getType() const override { return "Кардио"; }
+    std::string getType() const override { return "Cardio"; }
 
     void print() const override {
-        std::cout << "[Кардио] " << name;
-        std::cout << (isOutdoor ? " (на открито)" : " (на закрито)");
-        std::cout << ", интензивност: " << intensity;
+        std::cout << "[Cardio] " << name;
+        std::cout << (isOutdoor ? " (outdoor)" : " (indoor)");
+        std::cout << ", intensity: " << intensity;
     }
 
     void saveTo(std::ostream& out) const override {
