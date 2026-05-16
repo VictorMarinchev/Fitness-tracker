@@ -295,7 +295,7 @@ void addWorkoutMenu(FitnessTracker& t) {
     std::cin.ignore();
 }
 
-void listWorkouts(const FitnessTracker& t) {
+void listWorkouts(const FitnessTracker& t, bool pause = true) {
     clearScreen();
     std::cout << "\n============================================\n";
     std::cout << "              WORKOUTS (" << t.getWorkoutCount() << ")\n";
@@ -310,6 +310,37 @@ void listWorkouts(const FitnessTracker& t) {
         }
         std::cout << "\n";
     }
+    if (pause) {
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+    }
+}
+
+void removeWorkoutMenu(FitnessTracker& t) {
+    clearScreen();
+    std::cout << "\n============================================\n";
+    std::cout << "         DELETE WORKOUT\n";
+    std::cout << "============================================\n\n";
+    if (t.getWorkoutCount() == 0) {
+        std::cout << "  No workouts available.\n\n";
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+        return;
+    }
+    listWorkouts(t, false);
+    std::cout << "Index to delete (or -1 to cancel): ";
+    int idx = readInt();
+    if (idx == -1) return;
+    if (idx < 0 || idx >= t.getWorkoutCount()) {
+        clearScreen();
+        std::cout << "\n[ERROR] Invalid index.\n\n";
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+        return;
+    }
+    t.removeWorkout(idx);
+    clearScreen();
+    std::cout << "\n[DONE] Workout deleted successfully!\n\n";
     std::cout << "Press Enter to continue...";
     std::cin.ignore();
 }
@@ -350,7 +381,7 @@ void addProgramMenu(FitnessTracker& t) {
     std::cin.ignore();
 }
 
-void listPrograms(const FitnessTracker& t) {
+void listPrograms(const FitnessTracker& t, bool pause = true) {
     clearScreen();
     std::cout << "\n============================================\n";
     std::cout << "            PROGRAMS (" << t.getProgramCount() << ")\n";
@@ -359,10 +390,42 @@ void listPrograms(const FitnessTracker& t) {
     if (ps.empty()) {
         std::cout << "  No programs yet.\n\n";
     } else {
-        for (size_t i = 0; i < ps.size(); i++) { 
-            std::cout << "[" << i << "] "; ps[i].print(); 
+        for (size_t i = 0; i < ps.size(); i++) {
+            std::cout << "[" << i << "] "; ps[i].print();
         }
+        std::cout << "\n";
     }
+    if (pause) {
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+    }
+}
+
+void removeProgramMenu(FitnessTracker& t) {
+    clearScreen();
+    std::cout << "\n============================================\n";
+    std::cout << "        DELETE PROGRAM\n";
+    std::cout << "============================================\n\n";
+    if (t.getProgramCount() == 0) {
+        std::cout << "  No programs available.\n\n";
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+        return;
+    }
+    listPrograms(t, false);
+    std::cout << "Index to delete (or -1 to cancel): ";
+    int idx = readInt();
+    if (idx == -1) return;
+    if (idx < 0 || idx >= t.getProgramCount()) {
+        clearScreen();
+        std::cout << "\n[ERROR] Invalid index.\n\n";
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+        return;
+    }
+    t.removeProgram(idx);
+    clearScreen();
+    std::cout << "\n[DONE] Program deleted successfully!\n\n";
     std::cout << "Press Enter to continue...";
     std::cin.ignore();
 }
@@ -429,6 +492,35 @@ void listGoals(const FitnessTracker& t, bool pause = true) {
         std::cout << "Press Enter to continue...";
         std::cin.ignore();
     }
+}
+
+void removeGoalMenu(FitnessTracker& t) {
+    clearScreen();
+    std::cout << "\n============================================\n";
+    std::cout << "          DELETE GOAL\n";
+    std::cout << "============================================\n\n";
+    if (t.getGoalCount() == 0) {
+        std::cout << "  No goals available.\n\n";
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+        return;
+    }
+    listGoals(t, false);
+    std::cout << "Index to delete (or -1 to cancel): ";
+    int idx = readInt();
+    if (idx == -1) return;
+    if (idx < 0 || idx >= t.getGoalCount()) {
+        clearScreen();
+        std::cout << "\n[ERROR] Invalid index.\n\n";
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore();
+        return;
+    }
+    t.removeGoal(idx);
+    clearScreen();
+    std::cout << "\n[DONE] Goal deleted successfully!\n\n";
+    std::cout << "Press Enter to continue...";
+    std::cin.ignore();
 }
 
 void updateWeightMenu(FitnessTracker& t) {
@@ -514,19 +606,22 @@ void printMenu() {
     std::cout << "  WORKOUTS\n";
     std::cout << "    4. New\n";
     std::cout << "    5. View\n";
-    std::cout << "    6. Progress\n";
-    std::cout << "    7. Summary\n\n";
+    std::cout << "    6. Delete\n";
+    std::cout << "    7. Progress\n";
+    std::cout << "    8. Summary\n\n";
     std::cout << "  PROGRAMS\n";
-    std::cout << "    8. View\n";
-    std::cout << "    9. Add\n\n";
+    std::cout << "    9. View\n";
+    std::cout << "   10. Add\n";
+    std::cout << "   11. Delete\n\n";
     std::cout << "  GOALS\n";
-    std::cout << "   10. View\n";
-    std::cout << "   11. Add\n";
-    std::cout << "   12. Update current weight\n\n";
+    std::cout << "   12. View\n";
+    std::cout << "   13. Add\n";
+    std::cout << "   14. Delete\n";
+    std::cout << "   15. Update current weight\n\n";
     std::cout << "  OTHER\n";
-    std::cout << "   13. Search\n";
-    std::cout << "   14. Save to File\n";
-    std::cout << "   15. Load from File\n";
+    std::cout << "   16. Search\n";
+    std::cout << "   17. Save to File\n";
+    std::cout << "   18. Load from File\n";
     std::cout << "    0. Exit\n\n";
     std::cout << "============================================\n";
     std::cout << "Choice: ";
@@ -549,8 +644,9 @@ int main() {
             case 3: removeExerciseMenu(t); break;
             case 4: addWorkoutMenu(t); break;
             case 5: listWorkouts(t); break;
-            case 6: progressMenu(t); break;
-            case 7: 
+            case 6: removeWorkoutMenu(t); break;
+            case 7: progressMenu(t); break;
+            case 8: 
                 clearScreen();
                 std::cout << "\n============================================\n";
                 std::cout << "            SUMMARY\n";
@@ -559,13 +655,15 @@ int main() {
                 std::cout << "\nPress Enter to continue...";
                 std::cin.ignore();
                 break;
-            case 8: listPrograms(t); break;
-            case 9: addProgramMenu(t); break;
-            case 10: listGoals(t); break;
-            case 11: addGoalMenu(t); break;
-            case 12: updateWeightMenu(t); break;
-            case 13: searchMenu(t); break;
-            case 14:
+            case 9: listPrograms(t); break;
+            case 10: addProgramMenu(t); break;
+            case 11: removeProgramMenu(t); break;
+            case 12: listGoals(t); break;
+            case 13: addGoalMenu(t); break;
+            case 14: removeGoalMenu(t); break;
+            case 15: updateWeightMenu(t); break;
+            case 16: searchMenu(t); break;
+            case 17:
                 if (t.saveToFile("data.txt")) {
                     clearScreen();
                     std::cout << "\n[OK] Data saved to data.txt\n\n";
@@ -579,7 +677,7 @@ int main() {
                     std::cin.ignore();
                 }
                 break;
-            case 15:
+            case 18:
                 if (t.loadFromFile("data.txt")) {
                     clearScreen();
                     std::cout << "\n[OK] Data loaded from data.txt\n\n";
