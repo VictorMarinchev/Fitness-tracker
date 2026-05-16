@@ -25,7 +25,7 @@ public:
         for (size_t i = 0; i < goals.size(); i++) delete goals[i];
     }
 
-    // CRUD Exercises
+    // CRUD упражнения
     void addExercise(Exercise* ex) { exercises.push_back(ex); }
 
     void removeExercise(int idx) {
@@ -48,7 +48,7 @@ public:
     int getExerciseCount() const { return exercises.size(); }
     const std::vector<Exercise*>& getExercises() const { return exercises; }
 
-    // CRUD Workouts
+    // CRUD тренировки
     void addWorkout(Workout w) { workouts.push_back(std::move(w)); }
 
     void removeWorkout(int idx) {
@@ -60,7 +60,7 @@ public:
     const std::vector<Workout>& getWorkouts() const { return workouts; }
     Workout& getWorkout(int idx) { return workouts[idx]; }
 
-    // Feature 3: PR Detection
+    // Функционалност 3: PR откриване
     int detectPRs(Workout& w) {
         int newPRs = 0;
         const std::vector<WorkoutBlock*>& blocks = w.getBlocks();
@@ -94,9 +94,9 @@ public:
         return newPRs;
     }
 
-    // Feature 4: Progress
+    // Функционалност 4: Прогрес по упражнение
     void showProgress(const std::string& exerciseName) const {
-        std::cout << "\nProgress for: " << exerciseName << "\n";
+        std::cout << "\nПрогрес за: " << exerciseName << "\n";
         bool found = false;
         for (size_t i = 0; i < workouts.size(); i++) {
             const std::vector<WorkoutBlock*>& blocks = workouts[i].getBlocks();
@@ -111,17 +111,17 @@ public:
             }
             if (maxW > 0) {
                 std::cout << "  " << workouts[i].getDate()
-                          << " - max weight: " << maxW << " kg\n";
+                          << " - макс. тежест: " << maxW << " кг\n";
                 found = true;
             }
         }
-        if (!found) std::cout << "  No records.\n";
+        if (!found) std::cout << "  Няма записи.\n";
     }
 
-    // Feature 5: Summary
+    // Функционалност 5: Обобщения
     void showSummary() const {
-        std::cout << "\nSummary:\n";
-        std::cout << "  Number of workouts: " << workouts.size() << "\n";
+        std::cout << "\nОбобщение:\n";
+        std::cout << "  Брой тренировки: " << workouts.size() << "\n";
         double totalVolume = 0;
         int totalDuration = 0, totalPRs = 0;
         for (size_t i = 0; i < workouts.size(); i++) {
@@ -136,15 +136,15 @@ public:
                     if (sets[s].getIsPR()) totalPRs++;
             }
         }
-        std::cout << "  Total volume: " << totalVolume << "\n";
-        std::cout << "  Total time: " << totalDuration << " min\n";
-        std::cout << "  Number of PRs: " << totalPRs << "\n";
+        std::cout << "  Общ обем: " << totalVolume << "\n";
+        std::cout << "  Общо време: " << totalDuration << " мин\n";
+        std::cout << "  Брой PR-и: " << totalPRs << "\n";
         if (workouts.size() > 0)
-            std::cout << "  Average duration: "
-                      << (totalDuration / (int)workouts.size()) << " min\n";
+            std::cout << "  Средна продължителност: "
+                      << (totalDuration / (int)workouts.size()) << " мин\n";
     }
 
-    // CRUD Programs
+    // CRUD програми
     void addProgram(const WorkoutProgram& p) { programs.push_back(p); }
     int getProgramCount() const { return programs.size(); }
     const std::vector<WorkoutProgram>& getPrograms() const { return programs; }
@@ -154,7 +154,7 @@ public:
         programs.erase(programs.begin() + idx);
     }
 
-    // CRUD Goals
+    // CRUD цели
     void addGoal(Goal* g) { goals.push_back(g); }
     int getGoalCount() const { return goals.size(); }
     const std::vector<Goal*>& getGoals() const { return goals; }
@@ -183,7 +183,7 @@ public:
         }
     }
 
-    // Feature 8: Search
+    // Функционалност 8: Търсене
     std::vector<Exercise*> searchExercises(const std::string& query) const {
         std::vector<Exercise*> results;
         if (query.empty()) return results;
@@ -196,29 +196,51 @@ public:
         return results;
     }
 
-    // Feature 9: File I/O
+    // Функционалност 9: Запис във файл
     bool saveToFile(const std::string& filename) const {
         std::ofstream out(filename);
         if (!out) return false;
+
+        // Упражнения
         out << exercises.size() << "\n";
         for (size_t i = 0; i < exercises.size(); i++) exercises[i]->saveTo(out);
+
+        // Програми
         out << programs.size() << "\n";
         for (size_t i = 0; i < programs.size(); i++) programs[i].saveTo(out);
+
+        // Цели
         out << goals.size() << "\n";
         for (size_t i = 0; i < goals.size(); i++) goals[i]->saveTo(out);
+
+        // Тренировки
+        out << workouts.size() << "\n";
+        for (size_t i = 0; i < workouts.size(); i++) {
+            out << "WORKOUT|" << workouts[i].getDate() << "|"
+                << workouts[i].getDuration() << "|"
+                << workouts[i].getBlocks().size() << "\n";
+            const std::vector<WorkoutBlock*>& blocks = workouts[i].getBlocks();
+            for (size_t j = 0; j < blocks.size(); j++) blocks[j]->saveTo(out);
+        }
+
         return true;
     }
 
+    // Функционалност 9: Зареждане от файл
     bool loadFromFile(const std::string& filename) {
         std::ifstream in(filename);
         if (!in) return false;
+
+        // Изчистваме всичко
         for (size_t i = 0; i < exercises.size(); i++) delete exercises[i];
         exercises.clear();
+        for (size_t i = 0; i < goals.size(); i++) delete goals[i];
+        goals.clear();
+        programs.clear();
+        workouts.clear();
 
-        int n; in >> n; in.ignore();
-        for (int i = 0; i < n; i++) {
-            std::string line;
-            std::getline(in, line);
+        // Помощна функция за split по '|'
+        auto split = [](const std::string& line) {
             std::vector<std::string> parts;
             std::string cur;
             for (size_t j = 0; j < line.size(); j++) {
@@ -226,6 +248,17 @@ public:
                 else cur += line[j];
             }
             if (!cur.empty()) parts.push_back(cur);
+            return parts;
+        };
+
+        int n;
+        std::string line;
+
+        // === Упражнения ===
+        in >> n; in.ignore();
+        for (int i = 0; i < n; i++) {
+            std::getline(in, line);
+            std::vector<std::string> parts = split(line);
             if (parts.size() < 5) continue;
             if (parts[0] == "STRENGTH")
                 exercises.push_back(new StrengthExercise(
@@ -234,6 +267,92 @@ public:
                 exercises.push_back(new CardioExercise(
                     parts[1], parts[2], parts[3] == "1", parts[4]));
         }
+
+        // === Програми ===
+        in >> n; in.ignore();
+        for (int i = 0; i < n; i++) {
+            std::getline(in, line);
+            std::vector<std::string> parts = split(line);
+            if (parts.size() < 3) continue;
+            WorkoutProgram p(parts[1]);
+            int cnt = std::stoi(parts[2]);
+            for (int j = 0; j < cnt; j++) {
+                std::string exName;
+                std::getline(in, exName);
+                Exercise* ex = findExercise(exName);
+                if (ex) p.addExercise(ex);
+            }
+            programs.push_back(p);
+        }
+
+        // === Цели ===
+        in >> n; in.ignore();
+        for (int i = 0; i < n; i++) {
+            std::getline(in, line);
+            std::vector<std::string> parts = split(line);
+            if (parts.size() < 7) continue;
+            if (parts[0] == "SGOAL") {
+                StrengthGoal* sg = new StrengthGoal(
+                    parts[1], parts[2], parts[3],
+                    std::stod(parts[4]), std::stoi(parts[5]));
+                sg->updateBest(std::stod(parts[6]));
+                if (parts.size() > 7 && parts[7] == "1") sg->markCompleted();
+                goals.push_back(sg);
+            } else if (parts[0] == "WGOAL") {
+                WeightGoal* wg = new WeightGoal(
+                    parts[1], parts[2],
+                    std::stod(parts[3]), std::stod(parts[4]));
+                wg->updateCurrent(std::stod(parts[5]));
+                if (parts.size() > 6 && parts[6] == "1") wg->markCompleted();
+                goals.push_back(wg);
+            }
+        }
+
+        // === Тренировки ===
+        in >> n; in.ignore();
+        for (int i = 0; i < n; i++) {
+            std::getline(in, line);
+            std::vector<std::string> parts = split(line);
+            if (parts.size() < 4 || parts[0] != "WORKOUT") continue;
+            Workout w(parts[1], std::stoi(parts[2]));
+            int blockCount = std::stoi(parts[3]);
+
+            for (int b = 0; b < blockCount; b++) {
+                std::getline(in, line);
+                std::vector<std::string> bp = split(line);
+                if (bp.empty()) continue;
+
+                if (bp[0] == "STD" && bp.size() >= 3) {
+                    Exercise* ex = findExercise(bp[1]);
+                    if (!ex) continue;
+                    StandardBlock* sb = new StandardBlock(ex);
+                    int setCnt = std::stoi(bp[2]);
+                    for (int s = 0; s < setCnt; s++) {
+                        std::getline(in, line);
+                        std::vector<std::string> sp = split(line);
+                        if (sp.size() < 3) continue;
+                        Set st(std::stoi(sp[0]), std::stod(sp[1]));
+                        if (sp[2] == "1") st.markAsPR();
+                        sb->addSet(st);
+                    }
+                    w.addBlock(sb);
+                } else if (bp[0] == "CIRC" && bp.size() >= 3) {
+                    int rounds = std::stoi(bp[1]);
+                    int itemCnt = std::stoi(bp[2]);
+                    CircuitBlock* cb = new CircuitBlock(rounds);
+                    for (int it = 0; it < itemCnt; it++) {
+                        std::getline(in, line);
+                        std::vector<std::string> ip = split(line);
+                        if (ip.size() < 2) continue;
+                        Exercise* ex = findExercise(ip[0]);
+                        if (ex) cb->addItem(ex, std::stoi(ip[1]));
+                    }
+                    w.addBlock(cb);
+                }
+            }
+            workouts.push_back(std::move(w));
+        }
+
         return true;
     }
 };
