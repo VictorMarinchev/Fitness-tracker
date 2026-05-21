@@ -236,10 +236,56 @@ void addWorkoutMenu(FitnessTracker& t) {
         std::cout << "============================================\n\n";
         std::cout << "(1) Standard Block\n";
         std::cout << "(2) Circuit Block\n";
+        std::cout << "(3) Insert Program\n";
         std::cout << "(0) Done\n";
         std::cout << "\nChoice: ";
         int t1 = readInt();
         if (t1 == 0) break;
+        if (t1 == 3) {
+            if (t.getProgramCount() == 0) {
+                std::cout << "No programs available.\n";
+                std::cout << "Press Enter to continue..."; std::cin.ignore();
+                continue;
+            }
+            // show brief program list
+            const std::vector<WorkoutProgram>& _ps = t.getPrograms();
+            for (size_t pi = 0; pi < _ps.size(); ++pi) std::cout << "[" << pi << "] " << _ps[pi].getName() << "\n";
+            std::cout << "Program index to insert (-1 to cancel): ";
+            int pidx = readInt();
+            if (pidx == -1) continue;
+            if (pidx < 0 || pidx >= t.getProgramCount()) {
+                std::cout << "Invalid index.\n";
+                std::cout << "Press Enter to continue..."; std::cin.ignore();
+                continue;
+            }
+            const WorkoutProgram& prog = t.getPrograms()[pidx];
+            const std::vector<WorkoutBlock*>& pblocks = prog.getBlocks();
+            for (size_t bi = 0; bi < pblocks.size(); ++bi) {
+                WorkoutBlock* pb = pblocks[bi];
+                if (!pb) continue;
+                if (pb->isStandard()) {
+                    StandardBlock* sb = (StandardBlock*)pb;
+                    Exercise* ex = sb->getExercise();
+                    StandardBlock* copy = new StandardBlock(ex);
+                    const std::vector<Set>& sets = sb->getSets();
+                    for (size_t si = 0; si < sets.size(); ++si) copy->addSet(sets[si]);
+                    w.addBlock(copy);
+                } else {
+                    CircuitBlock* cb = dynamic_cast<CircuitBlock*>(pb);
+                    if (!cb) continue;
+                    CircuitBlock* ccopy = new CircuitBlock(cb->getRounds());
+                    const std::vector<CircuitItem>& items = cb->getItems();
+                    for (size_t ii = 0; ii < items.size(); ++ii) {
+                        ccopy->addItem(items[ii].exercise, items[ii].reps);
+                    }
+                    w.addBlock(ccopy);
+                }
+            }
+            clearScreen();
+            std::cout << "[OK] Program inserted into workout.\n";
+            std::cout << "Press Enter to continue..."; std::cin.ignore();
+            continue;
+        }
         listExercises(t, false);
         if (t1 == 1) {
             std::cout << "Exercise index: "; int idx = readInt();
