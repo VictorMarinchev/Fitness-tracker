@@ -284,12 +284,39 @@ public:
             std::vector<std::string> parts = split(line);
             if (parts.size() < 3) continue;
             WorkoutProgram p(parts[1]);
-            int cnt = std::stoi(parts[2]);
-            for (int j = 0; j < cnt; j++) {
-                std::string exName;
-                std::getline(in, exName);
-                Exercise* ex = findExercise(exName);
-                if (ex) p.addExercise(ex);
+            int blockCount = std::stoi(parts[2]);
+            for (int b = 0; b < blockCount; b++) {
+                std::getline(in, line);
+                std::vector<std::string> bp = split(line);
+                if (bp.empty()) continue;
+
+                if (bp[0] == "STD" && bp.size() >= 3) {
+                    Exercise* ex = findExercise(bp[1]);
+                    if (!ex) continue;
+                    StandardBlock* sb = new StandardBlock(ex);
+                    int setCnt = std::stoi(bp[2]);
+                    for (int s = 0; s < setCnt; s++) {
+                        std::getline(in, line);
+                        std::vector<std::string> sp = split(line);
+                        if (sp.size() < 4) continue;
+                        Set st(std::stoi(sp[0]), std::stod(sp[1]), std::stoi(sp[2]));
+                        if (sp[3] == "1") st.markAsPR();
+                        sb->addSet(st);
+                    }
+                    p.addBlock(sb);
+                } else if (bp[0] == "CIRC" && bp.size() >= 3) {
+                    int rounds = std::stoi(bp[1]);
+                    int itemCnt = std::stoi(bp[2]);
+                    CircuitBlock* cb = new CircuitBlock(rounds);
+                    for (int it = 0; it < itemCnt; it++) {
+                        std::getline(in, line);
+                        std::vector<std::string> ip = split(line);
+                        if (ip.size() < 2) continue;
+                        Exercise* ex = findExercise(ip[0]);
+                        if (ex) cb->addItem(ex, std::stoi(ip[1]));
+                    }
+                    p.addBlock(cb);
+                }
             }
             programs.push_back(p);
         }

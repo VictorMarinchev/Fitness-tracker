@@ -359,21 +359,62 @@ void addProgramMenu(FitnessTracker& t) {
     std::cout << "Program name: "; std::string n = readLine();
     clearScreen();
     std::cout << "\n============================================\n";
-    std::cout << "       SELECT EXERCISES (-1 to end)\n";
+    std::cout << "        ADD PROGRAM BLOCKS\n";
     std::cout << "============================================\n\n";
     WorkoutProgram p(n);
-    listExercises(t, false);
+
     while (true) {
-        std::cout << "\nExercise index (-1 = end): "; int idx = readInt();
-        if (idx == -1) break;
-        Exercise* ex = t.getExercise(idx);
-        if (ex) {
-            p.addExercise(ex);
-            std::cout << "[OK] Added: " << ex->getName() << "\n";
-        } else {
-            std::cout << "[ERROR] Invalid index.\n";
+        clearScreen();
+        std::cout << "\n============================================\n";
+        std::cout << "        ADD PROGRAM BLOCK\n";
+        std::cout << "============================================\n\n";
+        std::cout << "(1) Standard Block\n";
+        std::cout << "(2) Circuit Block\n";
+        std::cout << "(0) Done\n";
+        std::cout << "\nChoice: ";
+        int t1 = readInt();
+        if (t1 == 0) break;
+        listExercises(t, false);
+        if (t1 == 1) {
+            std::cout << "Exercise index: "; int idx = readInt();
+            Exercise* ex = t.getExercise(idx);
+            if (!ex) { std::cout << "Invalid index.\n"; std::cout << "Press Enter to continue..."; std::cin.ignore(); continue; }
+            StandardBlock* sb = new StandardBlock(ex);
+            std::cout << "Number of sets: "; int nsets = readInt();
+            std::cout << "Track weight for this block? (1=Yes, 2=No): ";
+            int trackChoice = readInt();
+            bool trackWeight = (trackChoice == 1);
+            for (int i = 0; i < nsets; i++) {
+                std::cout << "Set " << (i+1) << " - reps: "; int r = readInt();
+                double we = 0;
+                if (trackWeight) {
+                    std::cout << "Set " << (i+1) << " - weight (kg): ";
+                    we = readDouble();
+                }
+                sb->addSet(Set(r, we));
+            }
+            p.addBlock(sb);
+            clearScreen();
+            std::cout << "\n[OK] Standard block added to program.\n";
+            std::cout << "Press Enter to continue..."; std::cin.ignore();
+        } else if (t1 == 2) {
+            std::cout << "Number of rounds: "; int rounds = readInt();
+            CircuitBlock* cb = new CircuitBlock(rounds);
+            while (true) {
+                std::cout << "Exercise index (-1 = end): "; int idx = readInt();
+                if (idx == -1) break;
+                Exercise* ex = t.getExercise(idx);
+                if (!ex) { std::cout << "Invalid index.\n"; continue; }
+                std::cout << "Reps: "; int r = readInt();
+                cb->addItem(ex, r);
+            }
+            p.addBlock(cb);
+            clearScreen();
+            std::cout << "\n[OK] Circuit block added to program.\n";
+            std::cout << "Press Enter to continue..."; std::cin.ignore();
         }
     }
+
     t.addProgram(p);
     clearScreen();
     std::cout << "\n[OK] Program added successfully!\n\n";
