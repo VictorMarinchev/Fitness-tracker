@@ -16,6 +16,26 @@ private:
 public:
     WorkoutProgram(const std::string& n = "") : name(n) {}
 
+    // non-copyable
+    WorkoutProgram(const WorkoutProgram&) = delete;
+    WorkoutProgram& operator=(const WorkoutProgram&) = delete;
+
+    // movable
+    WorkoutProgram(WorkoutProgram&& other) noexcept
+        : name(std::move(other.name)), blocks(std::move(other.blocks)) {
+        other.blocks.clear();
+    }
+
+    WorkoutProgram& operator=(WorkoutProgram&& other) noexcept {
+        if (this != &other) {
+            for (size_t i = 0; i < blocks.size(); ++i) delete blocks[i];
+            name = std::move(other.name);
+            blocks = std::move(other.blocks);
+            other.blocks.clear();
+        }
+        return *this;
+    }
+
     ~WorkoutProgram() {
         for (size_t i = 0; i < blocks.size(); i++) delete blocks[i];
     }
@@ -55,7 +75,26 @@ public:
     void print() const {
         std::cout << "Program: " << name << " (" << blocks.size() << " blocks)\n";
         for (size_t i = 0; i < blocks.size(); i++) {
-            std::cout << "  [" << (i+1) << "] "; blocks[i]->display();
+            std::cout << "  [" << (i+1) << "] ";
+            if (!blocks[i]) {
+                std::cout << "<null block>\n";
+                continue;
+            }
+            if (blocks[i]->isStandard()) {
+                StandardBlock* sb = static_cast<StandardBlock*>(blocks[i]);
+                if (!sb->getExercise()) {
+                    std::cout << "<missing exercise> - " << sb->getSetCount() << " sets\n";
+                    continue;
+                }
+                sb->display();
+            } else {
+                CircuitBlock* cb = dynamic_cast<CircuitBlock*>(blocks[i]);
+                if (!cb) {
+                    std::cout << "<unknown block>\n";
+                    continue;
+                }
+                cb->display();
+            }
         }
     }
 

@@ -415,7 +415,7 @@ void addProgramMenu(FitnessTracker& t) {
         }
     }
 
-    t.addProgram(p);
+    t.addProgram(std::move(p));
     clearScreen();
     std::cout << "\n[OK] Program added successfully!\n\n";
     std::cout << "Press Enter to continue...";

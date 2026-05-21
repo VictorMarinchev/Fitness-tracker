@@ -49,7 +49,11 @@ public:
     }
 
     void display() const override {
-        std::cout << exercise->getName() << " - " << sets.size() << " sets:\n";
+        if (!exercise) {
+            std::cout << "<missing exercise> - " << sets.size() << " sets:\n";
+        } else {
+            std::cout << exercise->getName() << " - " << sets.size() << " sets:\n";
+        }
         for (size_t i = 0; i < sets.size(); i++) {
             std::cout << "      " << (i + 1) << ") "
                       << sets[i].getReps() << " reps x "
@@ -110,9 +114,10 @@ public:
     void display() const override {
         std::cout << "Circuit workout - " << rounds << " rounds:\n";
         for (size_t i = 0; i < items.size(); i++) {
-            std::cout << "      " << (i + 1) << ") "
-                      << items[i].exercise->getName()
-                      << " x " << items[i].reps << " reps\n";
+            std::cout << "      " << (i + 1) << ") ";
+            if (!items[i].exercise) std::cout << "<missing exercise>";
+            else std::cout << items[i].exercise->getName();
+            std::cout << " x " << items[i].reps << " reps\n";
         }
     }
 

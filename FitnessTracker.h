@@ -154,7 +154,7 @@ public:
     }
 
     // CRUD programs
-    void addProgram(const WorkoutProgram& p) { programs.push_back(p); }
+    void addProgram(WorkoutProgram&& p) { programs.push_back(std::move(p)); }
     int getProgramCount() const { return programs.size(); }
     const std::vector<WorkoutProgram>& getPrograms() const { return programs; }
 
@@ -318,7 +318,7 @@ public:
                     p.addBlock(cb);
                 }
             }
-            programs.push_back(p);
+            programs.push_back(std::move(p));
         }
 
         // === Goals ===
