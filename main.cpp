@@ -276,7 +276,7 @@ void addWorkoutMenu(FitnessTracker& t) {
                     CircuitBlock* ccopy = new CircuitBlock(cb->getRounds());
                     const std::vector<CircuitItem>& items = cb->getItems();
                     for (size_t ii = 0; ii < items.size(); ++ii) {
-                        ccopy->addItem(items[ii].exercise, items[ii].reps);
+                        ccopy->addItem(items[ii].exercise, items[ii].reps, items[ii].weight);
                     }
                     w.addBlock(ccopy);
                 }
@@ -317,7 +317,8 @@ void addWorkoutMenu(FitnessTracker& t) {
                 Exercise* ex = t.getExercise(idx);
                 if (!ex) { std::cout << "Invalid index.\n"; continue; }
                 std::cout << "Reps: "; int r = readInt();
-                cb->addItem(ex, r);
+                std::cout << "Weight for this exercise (kg, 0 if none): "; double wgt = readDouble();
+                cb->addItem(ex, r, wgt);
             }
             w.addBlock(cb);
             clearScreen();
@@ -452,7 +453,8 @@ void addProgramMenu(FitnessTracker& t) {
                 Exercise* ex = t.getExercise(idx);
                 if (!ex) { std::cout << "Invalid index.\n"; continue; }
                 std::cout << "Reps: "; int r = readInt();
-                cb->addItem(ex, r);
+                std::cout << "Weight for this exercise (kg, 0 if none): "; double wgt = readDouble();
+                cb->addItem(ex, r, wgt);
             }
             p.addBlock(cb);
             clearScreen();

@@ -313,7 +313,11 @@ public:
                         std::vector<std::string> ip = split(line);
                         if (ip.size() < 2) continue;
                         Exercise* ex = findExercise(ip[0]);
-                        if (ex) cb->addItem(ex, std::stoi(ip[1]));
+                        if (!ex) continue;
+                        int reps = std::stoi(ip[1]);
+                        double weight = 0;
+                        if (ip.size() >= 3) weight = std::stod(ip[2]);
+                        cb->addItem(ex, reps, weight);
                     }
                     p.addBlock(cb);
                 }
@@ -409,7 +413,11 @@ public:
                         std::vector<std::string> ip = split(line);
                         if (ip.size() < 2) continue;
                         Exercise* ex = findExercise(ip[0]);
-                        if (ex) cb->addItem(ex, std::stoi(ip[1]));
+                        if (!ex) continue;
+                        int reps = std::stoi(ip[1]);
+                        double weight = 0;
+                        if (ip.size() >= 3) weight = std::stod(ip[2]);
+                        cb->addItem(ex, reps, weight);
                     }
                     w.addBlock(cb);
                 }

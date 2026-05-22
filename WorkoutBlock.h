@@ -76,7 +76,9 @@ public:
 struct CircuitItem {
     Exercise* exercise;
     int reps;
-    CircuitItem(Exercise* ex = nullptr, int r = 0) : exercise(ex), reps(r) {}
+    double weight;
+    CircuitItem(Exercise* ex = nullptr, int r = 0, double w = 0)
+        : exercise(ex), reps(r), weight(w) {}
 };
 
 class CircuitBlock : public WorkoutBlock {
@@ -90,8 +92,8 @@ public:
     int getRounds() const { return rounds; }
     const std::vector<CircuitItem>& getItems() const { return items; }
 
-    void addItem(Exercise* ex, int reps) {
-        items.push_back(CircuitItem(ex, reps));
+    void addItem(Exercise* ex, int reps, double weight = 0) {
+        items.push_back(CircuitItem(ex, reps, weight));
     }
 
     void removeExercise(Exercise* ex) {
@@ -107,7 +109,11 @@ public:
 
     double getTotalVolume() const override {
         double total = 0;
-        for (size_t i = 0; i < items.size(); i++) total += items[i].reps;
+        for (size_t i = 0; i < items.size(); i++) {
+            double repVolume = items[i].reps;
+            if (items[i].weight > 0) repVolume *= items[i].weight;
+            total += repVolume;
+        }
         return total * rounds;
     }
 
@@ -117,14 +123,16 @@ public:
             std::cout << "      " << (i + 1) << ") ";
             if (!items[i].exercise) std::cout << "<missing exercise>";
             else std::cout << items[i].exercise->getName();
-            std::cout << " x " << items[i].reps << " reps\n";
+            std::cout << " x " << items[i].reps << " reps";
+            if (items[i].weight > 0) std::cout << " @ " << items[i].weight << " kg";
+            std::cout << "\n";
         }
     }
 
     void saveTo(std::ostream& out) const override {
         out << "CIRC|" << rounds << "|" << items.size() << "\n";
         for (size_t i = 0; i < items.size(); i++) {
-            out << items[i].exercise->getName() << "|" << items[i].reps << "\n";
+            out << items[i].exercise->getName() << "|" << items[i].reps << "|" << items[i].weight << "\n";
         }
     }
 };
