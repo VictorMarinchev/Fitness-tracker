@@ -38,3 +38,4 @@ Thumbs.db
 # Data files (optional - uncomment if you want to exclude saved data)
 data.txt
 in.txt
+temp.txt

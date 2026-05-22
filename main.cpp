@@ -4,9 +4,16 @@
 #include <cstdlib>
 #include <algorithm>
 #include <iomanip>
+#include <cstdio>
+#include <io.h>
 #include "FitnessTracker.h"
 
+bool isInteractive() {
+    return _isatty(_fileno(stdin)) && _isatty(_fileno(stdout));
+}
+
 void clearScreen() {
+    if (!isInteractive()) return;
     #ifdef _WIN32
         system("cls");
     #else
@@ -14,9 +21,16 @@ void clearScreen() {
     #endif
 }
 
+void pauseIfInteractive() {
+    if (!isInteractive()) return;
+    if (isInteractive()) std::cout << "Press Enter to continue...";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
 int readInt() {
     int x;
     while (!(std::cin >> x)) {
+        if (std::cin.eof()) return -1;
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Invalid number, try again: ";
@@ -28,6 +42,7 @@ int readInt() {
 double readDouble() {
     double x;
     while (!(std::cin >> x)) {
+        if (std::cin.eof()) return 0.0;
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Invalid number, try again: ";
@@ -38,7 +53,7 @@ double readDouble() {
 
 std::string readLine() {
     std::string s;
-    std::getline(std::cin, s);
+    if (!std::getline(std::cin, s)) return std::string();
     return s;
 }
 
@@ -166,8 +181,8 @@ void listExercises(const FitnessTracker& t, bool pause = true) {
         std::cout << "\n";
     }
     if (pause) {
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
     }
 }
 
@@ -194,8 +209,8 @@ void addExerciseMenu(FitnessTracker& t) {
     }
     clearScreen();
     std::cout << "\n[OK] Exercise added successfully!\n\n";
-    std::cout << "Press Enter to continue...";
-    std::cin.ignore();
+    if (isInteractive()) std::cout << "Press Enter to continue...";
+    if (isInteractive()) std::cin.ignore();
 }
 
 void removeExerciseMenu(FitnessTracker& t) {
@@ -210,16 +225,16 @@ void removeExerciseMenu(FitnessTracker& t) {
     t.removeExercise(idx);
     clearScreen();
     std::cout << "\n[DONE] Exercise deleted successfully!\n\n";
-    std::cout << "Press Enter to continue...";
-    std::cin.ignore();
+    if (isInteractive()) std::cout << "Press Enter to continue...";
+    if (isInteractive()) std::cin.ignore();
 }
 
 void addWorkoutMenu(FitnessTracker& t) {
     clearScreen();
     if (t.getExerciseCount() == 0) { 
         std::cout << "\n[ERROR] Add exercises first.\n\n";
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
         return; 
     }
     std::cout << "\n============================================\n";
@@ -244,7 +259,7 @@ void addWorkoutMenu(FitnessTracker& t) {
         if (t1 == 3) {
             if (t.getProgramCount() == 0) {
                 std::cout << "No programs available.\n";
-                std::cout << "Press Enter to continue..."; std::cin.ignore();
+                pauseIfInteractive();
                 continue;
             }
             // show brief program list
@@ -255,7 +270,7 @@ void addWorkoutMenu(FitnessTracker& t) {
             if (pidx == -1) continue;
             if (pidx < 0 || pidx >= t.getProgramCount()) {
                 std::cout << "Invalid index.\n";
-                std::cout << "Press Enter to continue..."; std::cin.ignore();
+                pauseIfInteractive();
                 continue;
             }
             const WorkoutProgram& prog = t.getPrograms()[pidx];
@@ -283,7 +298,7 @@ void addWorkoutMenu(FitnessTracker& t) {
             }
             clearScreen();
             std::cout << "[OK] Program inserted into workout.\n";
-            std::cout << "Press Enter to continue..."; std::cin.ignore();
+            pauseIfInteractive();
             continue;
         }
         listExercises(t, false);
@@ -338,8 +353,8 @@ void addWorkoutMenu(FitnessTracker& t) {
     } else {
         std::cout << "\n[OK] Workout saved successfully!\n\n";
     }
-    std::cout << "Press Enter to continue...";
-    std::cin.ignore();
+    if (isInteractive()) std::cout << "Press Enter to continue...";
+    if (isInteractive()) std::cin.ignore();
 }
 
 void listWorkouts(const FitnessTracker& t, bool pause = true) {
@@ -358,8 +373,8 @@ void listWorkouts(const FitnessTracker& t, bool pause = true) {
         std::cout << "\n";
     }
     if (pause) {
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
     }
 }
 
@@ -370,8 +385,8 @@ void removeWorkoutMenu(FitnessTracker& t) {
     std::cout << "============================================\n\n";
     if (t.getWorkoutCount() == 0) {
         std::cout << "  No workouts available.\n\n";
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
         return;
     }
     listWorkouts(t, false);
@@ -381,23 +396,23 @@ void removeWorkoutMenu(FitnessTracker& t) {
     if (idx < 0 || idx >= t.getWorkoutCount()) {
         clearScreen();
         std::cout << "\n[ERROR] Invalid index.\n\n";
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
         return;
     }
     t.removeWorkout(idx);
     clearScreen();
     std::cout << "\n[DONE] Workout deleted successfully!\n\n";
-    std::cout << "Press Enter to continue...";
-    std::cin.ignore();
+    if (isInteractive()) std::cout << "Press Enter to continue...";
+    if (isInteractive()) std::cin.ignore();
 }
 
 void addProgramMenu(FitnessTracker& t) {
     clearScreen();
     if (t.getExerciseCount() == 0) { 
         std::cout << "\n[ERROR] Add exercises first.\n\n";
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
         return; 
     }
     std::cout << "\n============================================\n";
@@ -425,7 +440,7 @@ void addProgramMenu(FitnessTracker& t) {
         if (t1 == 1) {
             std::cout << "Exercise index: "; int idx = readInt();
             Exercise* ex = t.getExercise(idx);
-            if (!ex) { std::cout << "Invalid index.\n"; std::cout << "Press Enter to continue..."; std::cin.ignore(); continue; }
+            if (!ex) { std::cout << "Invalid index.\n"; pauseIfInteractive(); continue; }
             StandardBlock* sb = new StandardBlock(ex);
             std::cout << "Number of sets: "; int nsets = readInt();
             std::cout << "Track weight for this block? (1=Yes, 2=No): ";
@@ -443,7 +458,7 @@ void addProgramMenu(FitnessTracker& t) {
             p.addBlock(sb);
             clearScreen();
             std::cout << "\n[OK] Standard block added to program.\n";
-            std::cout << "Press Enter to continue..."; std::cin.ignore();
+            pauseIfInteractive();
         } else if (t1 == 2) {
             std::cout << "Number of rounds: "; int rounds = readInt();
             CircuitBlock* cb = new CircuitBlock(rounds);
@@ -459,15 +474,15 @@ void addProgramMenu(FitnessTracker& t) {
             p.addBlock(cb);
             clearScreen();
             std::cout << "\n[OK] Circuit block added to program.\n";
-            std::cout << "Press Enter to continue..."; std::cin.ignore();
+            pauseIfInteractive();
         }
     }
 
     t.addProgram(std::move(p));
     clearScreen();
     std::cout << "\n[OK] Program added successfully!\n\n";
-    std::cout << "Press Enter to continue...";
-    std::cin.ignore();
+    if (isInteractive()) std::cout << "Press Enter to continue...";
+    if (isInteractive()) std::cin.ignore();
 }
 
 void listPrograms(const FitnessTracker& t, bool pause = true) {
@@ -485,8 +500,8 @@ void listPrograms(const FitnessTracker& t, bool pause = true) {
         std::cout << "\n";
     }
     if (pause) {
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
     }
 }
 
@@ -497,8 +512,8 @@ void removeProgramMenu(FitnessTracker& t) {
     std::cout << "============================================\n\n";
     if (t.getProgramCount() == 0) {
         std::cout << "  No programs available.\n\n";
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
         return;
     }
     listPrograms(t, false);
@@ -508,15 +523,15 @@ void removeProgramMenu(FitnessTracker& t) {
     if (idx < 0 || idx >= t.getProgramCount()) {
         clearScreen();
         std::cout << "\n[ERROR] Invalid index.\n\n";
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
         return;
     }
     t.removeProgram(idx);
     clearScreen();
     std::cout << "\n[DONE] Program deleted successfully!\n\n";
-    std::cout << "Press Enter to continue...";
-    std::cin.ignore();
+    if (isInteractive()) std::cout << "Press Enter to continue...";
+    if (isInteractive()) std::cin.ignore();
 }
 
 void addGoalMenu(FitnessTracker& t) {
@@ -538,8 +553,7 @@ void addGoalMenu(FitnessTracker& t) {
         if (!ex) {
             clearScreen();
             std::cout << "\n[ERROR] Invalid index. Goal not added.\n\n";
-            std::cout << "Press Enter to continue...";
-            std::cin.ignore();
+            pauseIfInteractive();
             return;
         }
         std::string en = ex->getName();
@@ -559,8 +573,8 @@ void addGoalMenu(FitnessTracker& t) {
     t.updateGoalsFromWorkouts();
     clearScreen();
     std::cout << "\n[OK] Goal added successfully!\n\n";
-    std::cout << "Press Enter to continue...";
-    std::cin.ignore();
+    if (isInteractive()) std::cout << "Press Enter to continue...";
+    if (isInteractive()) std::cin.ignore();
 }
 
 void listGoals(const FitnessTracker& t, bool pause = true) {
@@ -578,8 +592,8 @@ void listGoals(const FitnessTracker& t, bool pause = true) {
         std::cout << "\n";
     }
     if (pause) {
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
     }
 }
 
@@ -590,8 +604,8 @@ void removeGoalMenu(FitnessTracker& t) {
     std::cout << "============================================\n\n";
     if (t.getGoalCount() == 0) {
         std::cout << "  No goals available.\n\n";
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
         return;
     }
     listGoals(t, false);
@@ -601,23 +615,23 @@ void removeGoalMenu(FitnessTracker& t) {
     if (idx < 0 || idx >= t.getGoalCount()) {
         clearScreen();
         std::cout << "\n[ERROR] Invalid index.\n\n";
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
         return;
     }
     t.removeGoal(idx);
     clearScreen();
     std::cout << "\n[DONE] Goal deleted successfully!\n\n";
-    std::cout << "Press Enter to continue...";
-    std::cin.ignore();
+    if (isInteractive()) std::cout << "Press Enter to continue...";
+    if (isInteractive()) std::cin.ignore();
 }
 
 void updateWeightMenu(FitnessTracker& t) {
     clearScreen();
     if (t.getGoalCount() == 0) {
         std::cout << "\n[ERROR] No goals available.\n\n";
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
         return;
     }
 
@@ -625,16 +639,16 @@ void updateWeightMenu(FitnessTracker& t) {
     std::cout << "\nIndex of weight goal: "; int idx = readInt();
     if (idx < 0 || idx >= (int)t.getGoals().size()) {
         std::cout << "Invalid index.\n";
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
         return;
     }
 
     WeightGoal* wg = dynamic_cast<WeightGoal*>(t.getGoals()[idx]);
     if (!wg) {
         std::cout << "This goal is not a weight goal.\n";
-        std::cout << "Press Enter to continue...";
-        std::cin.ignore();
+        if (isInteractive()) std::cout << "Press Enter to continue...";
+        if (isInteractive()) std::cin.ignore();
         return;
     }
 
@@ -642,8 +656,8 @@ void updateWeightMenu(FitnessTracker& t) {
     wg->updateCurrent(w);
     clearScreen();
     std::cout << "\nUpdated.\n\n";
-    std::cout << "Press Enter to continue...";
-    std::cin.ignore();
+    if (isInteractive()) std::cout << "Press Enter to continue...";
+    if (isInteractive()) std::cin.ignore();
 }
 
 void searchMenu(const FitnessTracker& t) {
@@ -666,8 +680,8 @@ void searchMenu(const FitnessTracker& t) {
         }
         std::cout << "\n";
     }
-    std::cout << "Press Enter to continue...";
-    std::cin.ignore();
+    if (isInteractive()) std::cout << "Press Enter to continue...";
+    if (isInteractive()) std::cin.ignore();
 }
 
 void progressMenu(const FitnessTracker& t) {
@@ -679,7 +693,7 @@ void progressMenu(const FitnessTracker& t) {
     clearScreen();
     t.showProgress(n);
     std::cout << "\nPress Enter to continue...";
-    std::cin.ignore();
+    if (isInteractive()) std::cin.ignore();
 }
 
 void printMenu() {
@@ -727,6 +741,14 @@ int main() {
     while (true) {
         printMenu();
         int c = readInt();
+        if (c == -1) {  // EOF detected
+            clearScreen();
+            std::cout << "\n============================================\n";
+            std::cout << "     Thank you for using Fitness Tracker!\n";
+            std::cout << "              Goodbye!\n";
+            std::cout << "============================================\n\n";
+            return 0;
+        }
         switch (c) {
             case 1: listExercises(t); break;
             case 2: addExerciseMenu(t); break;
@@ -742,7 +764,7 @@ int main() {
                 std::cout << "============================================\n";
                 t.showSummary();
                 std::cout << "\nPress Enter to continue...";
-                std::cin.ignore();
+                if (isInteractive()) std::cin.ignore();
                 break;
             case 9: listPrograms(t); break;
             case 10: addProgramMenu(t); break;
@@ -756,28 +778,28 @@ int main() {
                 if (t.saveToFile("data.txt")) {
                     clearScreen();
                     std::cout << "\n[OK] Data saved to data.txt\n\n";
-                    std::cout << "Press Enter to continue...";
-                    std::cin.ignore();
+                    if (isInteractive()) std::cout << "Press Enter to continue...";
+                    if (isInteractive()) std::cin.ignore();
                 }
                 else {
                     clearScreen();
                     std::cout << "\n[ERROR] Error saving file.\n\n";
-                    std::cout << "Press Enter to continue...";
-                    std::cin.ignore();
+                    if (isInteractive()) std::cout << "Press Enter to continue...";
+                    if (isInteractive()) std::cin.ignore();
                 }
                 break;
             case 18:
                 if (t.loadFromFile("data.txt")) {
                     clearScreen();
                     std::cout << "\n[OK] Data loaded from data.txt\n\n";
-                    std::cout << "Press Enter to continue...";
-                    std::cin.ignore();
+                    if (isInteractive()) std::cout << "Press Enter to continue...";
+                    if (isInteractive()) std::cin.ignore();
                 }
                 else {
                     clearScreen();
                     std::cout << "\n[ERROR] Error loading file.\n\n";
-                    std::cout << "Press Enter to continue...";
-                    std::cin.ignore();
+                    if (isInteractive()) std::cout << "Press Enter to continue...";
+                    if (isInteractive()) std::cin.ignore();
                 }
                 break;
             case 0:
@@ -790,8 +812,11 @@ int main() {
             default:
                 clearScreen();
                 std::cout << "\n[ERROR] Invalid choice. Please try again.\n\n";
-                std::cout << "Press Enter to continue...";
-                std::cin.ignore();
+                pauseIfInteractive();
         }
     }
 }
+
+
+
+
