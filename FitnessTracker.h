@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <stdexcept>
 #include "Exercise.h"
 #include "WorkoutBlock.h"
 #include "Goal.h"
@@ -29,7 +30,8 @@ public:
     void addExercise(Exercise* ex) { exercises.push_back(ex); }
 
     void removeExercise(int idx) {
-        if (idx < 0 || idx >= (int)exercises.size()) return;
+        if (idx < 0 || idx >= (int)exercises.size())
+            throw std::invalid_argument("Invalid exercise index");
         Exercise* ex = exercises[idx];
 
         // Remove references from programs
@@ -61,7 +63,8 @@ public:
     void addWorkout(Workout w) { workouts.push_back(std::move(w)); }
 
     void removeWorkout(int idx) {
-        if (idx < 0 || idx >= (int)workouts.size()) return;
+        if (idx < 0 || idx >= (int)workouts.size())
+            throw std::invalid_argument("Invalid workout index");
         workouts.erase(workouts.begin() + idx);
     }
 
@@ -159,7 +162,8 @@ public:
     const std::vector<WorkoutProgram>& getPrograms() const { return programs; }
 
     void removeProgram(int idx) {
-        if (idx < 0 || idx >= (int)programs.size()) return;
+        if (idx < 0 || idx >= (int)programs.size())
+            throw std::invalid_argument("Invalid program index");
         programs.erase(programs.begin() + idx);
     }
 
@@ -169,7 +173,8 @@ public:
     const std::vector<Goal*>& getGoals() const { return goals; }
 
     void removeGoal(int idx) {
-        if (idx < 0 || idx >= (int)goals.size()) return;
+        if (idx < 0 || idx >= (int)goals.size())
+            throw std::invalid_argument("Invalid goal index");
         delete goals[idx];
         goals.erase(goals.begin() + idx);
     }
@@ -208,7 +213,8 @@ public:
     // Feature 9: Save to file
     bool saveToFile(const std::string& filename) const {
         std::ofstream out(filename);
-        if (!out) return false;
+        if (!out)
+            throw std::runtime_error("Could not open file for writing: " + filename);
 
         // Exercises
         out << exercises.size() << "\n";
@@ -238,7 +244,8 @@ public:
     // Feature 9: Load from file
     bool loadFromFile(const std::string& filename) {
         std::ifstream in(filename);
-        if (!in) return false;
+        if (!in)
+            throw std::runtime_error("Could not open file for reading: " + filename);
 
         // Clear everything
         for (size_t i = 0; i < exercises.size(); i++) delete exercises[i];

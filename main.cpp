@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <cstdio>
+#include <stdexcept>
 #include <io.h>
 #include "FitnessTracker.h"
 
@@ -739,17 +740,18 @@ int main() {
     seedData(t);
     
     while (true) {
-        printMenu();
-        int c = readInt();
-        if (c == -1) {  // EOF detected
-            clearScreen();
-            std::cout << "\n============================================\n";
-            std::cout << "     Thank you for using Fitness Tracker!\n";
-            std::cout << "              Goodbye!\n";
-            std::cout << "============================================\n\n";
-            return 0;
-        }
-        switch (c) {
+        try {
+            printMenu();
+            int c = readInt();
+            if (c == -1) {  // EOF detected
+                clearScreen();
+                std::cout << "\n============================================\n";
+                std::cout << "     Thank you for using Fitness Tracker!\n";
+                std::cout << "              Goodbye!\n";
+                std::cout << "============================================\n\n";
+                return 0;
+            }
+            switch (c) {
             case 1: listExercises(t); break;
             case 2: addExerciseMenu(t); break;
             case 3: removeExerciseMenu(t); break;
@@ -813,6 +815,22 @@ int main() {
                 clearScreen();
                 std::cout << "\n[ERROR] Invalid choice. Please try again.\n\n";
                 pauseIfInteractive();
+        }
+        }
+        catch (const std::invalid_argument& ex) {
+            clearScreen();
+            std::cout << "\n[ERROR] Invalid argument: " << ex.what() << "\n\n";
+            pauseIfInteractive();
+        }
+        catch (const std::runtime_error& ex) {
+            clearScreen();
+            std::cout << "\n[ERROR] Runtime error: " << ex.what() << "\n\n";
+            pauseIfInteractive();
+        }
+        catch (const std::exception& ex) {
+            clearScreen();
+            std::cout << "\n[ERROR] Unexpected error: " << ex.what() << "\n\n";
+            pauseIfInteractive();
         }
     }
 }
